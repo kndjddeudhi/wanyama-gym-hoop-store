@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gym & Hoops Store</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4f4f4;
+      color: #333;
+    }
+    header {
+      background: #222;
+      color: #fff;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h1 {
+      margin: 0;
+    }
+    nav a {
+      color: #fff;
+      margin-left: 1rem;
+      text-decoration: none;
+    }
+    .container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      padding: 1rem;
+    }
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .card img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+    .card-content {
+      padding: 1rem;
+      flex-grow: 1;
+    }
+    .card-content h3 {
+      margin: 0 0 0.5rem;
+    }
+    .price {
+      font-weight: bold;
+      color: #007bff;
+    }
+    .btn {
+      display: inline-block;
+      background: #007bff;
+      color: white;
+      padding: 0.5rem 1rem;
+      margin-top: 0.5rem;
+      border-radius: 5px;
+      text-align: center;
+      cursor: pointer;
+    }
+    footer {
+      background: #222;
+      color: #fff;
+      text-align: center;
+      padding: 1rem;
+      margin-top: 2rem;
+    }
+    /* Cart popup */
+    #cartPopup {
+      position: fixed;
+      top: 0;
+      right: -400px;
+      width: 350px;
+      height: 100%;
+      background: white;
+      box-shadow: -2px 0 5px rgba(0,0,0,0.3);
+      transition: right 0.3s ease;
+      padding: 1rem;
+      overflow-y: auto;
+      z-index: 1000;
+    }
+    #cartPopup.active {
+      right: 0;
+    }
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 0.5rem 0;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 0.5rem;
+    }
+    .cart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .cart-header h2 {
+      margin: 0;
+    }
+    .close-btn {
+      cursor: pointer;
+      font-size: 18px;
+      color: red;
+    }
+    .remove-btn {
+      background: red;
+      color: white;
+      border: none;
+      padding: 3px 6px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      margin-left: 10px;
+    }
+    #cartIcon {
+      cursor: pointer;
+      background: #007bff;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+    }
+    #checkoutBtn {
+      background: green;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 1rem;
+      font-size: 16px;
+    }
+    #thankYouMessage {
+      display: none;
+      text-align: center;
+      font-size: 18px;
+      color: green;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🏋‍♂ Gym & Hoops Store 🏀</h1>
+    <nav>
+      <a href="#">Home</a>
+      <a href="#">Gym Gear</a>
+      <a href="#">Basketball Gear</a>
+      <a href="#" id="cartIcon">🛒 Cart (<span id="cartCount">0</span>)</a>
+    </nav>
+  </header>
+
+  <main class="container" id="productContainer">
+    <!-- Products will be injected here -->
+  </main>
+
+  <div id="cartPopup">
+    <div class="cart-header">
+      <h2>Your Cart</h2>
+      <span class="close-btn" onclick="toggleCart()">✖</span>
+    </div>
+    <div id="cartItems"></div>
+    <h3>Total: KES <span id="cartTotal">0</span></h3>
+    <button id="checkoutBtn" onclick="checkout()">Checkout</button>
+    <div id="thankYouMessage">✅ Thank you for your order!</div>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 Gym & Hoops Store | All Rights Reserved</p>
+  </footer>
+
+  <script>
+    const products = [
+      {
+        id: 1,
+        name: "Pro Steel Adjustable Dumbbells",
+        price: 12500,
+        img: "https://images.unsplash.com/photo-1599955046706-6f2c3f9b72d5",
+        desc: "Save space with these adjustable dumbbells (2.5–24kg per hand)."
+      },
+      {
+        id: 2,
+        name: "Elite Kettlebell 16kg",
+        price: 5800,
+        img: "https://images.unsplash.com/photo-1599058917212-1d1d47b2e3a7",
+        desc: "Durable powder-coat kettlebell with flat base for swings and presses."
+      },
+      {
+        id: 3,
+        name: "Premium Yoga Mat",
+        price: 2400,
+        img: "https://images.unsplash.com/photo-1603988363607-7d63f7e3e9df",
+        desc: "Non-slip 6mm cushioning mat for pilates, yoga, and stretching."
+      },
+      {
+        id: 4,
+        name: "Official Size 7 Leather Basketball",
+        price: 4500,
+        img: "https://images.unsplash.com/photo-1546519638-68e109498ffc",
+        desc: "Indoor composite leather ball with excellent grip for tournaments."
+      },
+      {
+        id: 5,
+        name: "Adjustable Basketball Hoop",
+        price: 48500,
+        img: "https://images.unsplash.com/photo-1614116309429-7f1c8a62fe09",
+        desc: "Shatter-proof backboard, adjustable height, and mobile wheels."
+      }
+    ];
+
+    let cart = [];
+
+    function displayProducts() {
+      const container = document.getElementById("productContainer");
+      container.innerHTML = "";
+      products.forEach(p => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <img src="${p.img}" alt="${p.name}">
+          <div class="card-content">
+            <h3>${p.name}</h3>
+            <p>${p.desc}</p>
+            <p class="price">KES ${p.price}</p>
+            <div class="btn" onclick="addToCart(${p.id})">Add to Cart</div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function addToCart(id) {
+      const product = products.find(p => p.id === id);
+      cart.push(product);
+      updateCart();
+    }
+
+    function removeFromCart(index) {
+      cart.splice(index, 1);
+      updateCart();
+    }
+
+    function updateCart() {
+      document.getElementById("cartCount").textContent = cart.length;
+      const cartItems = document.getElementById("cartItems");
+      cartItems.innerHTML = "";
+      let total = 0;
+      cart.forEach((item, index) => {
+        total += item.price;
+        cartItems.innerHTML += `
+          <div class="cart-item">
+            <span>${item.name} - KES ${item.price}</span>
+            <button class="remove-btn" onclick="removeFromCart(${index})">Remove</button>
+          </div>
+        `;
+      });
+      document.getElementById("cartTotal").textContent = total;
+      document.getElementById("thankYouMessage").style.display = "none"; // hide thank you if cart updates
+    }
+
+    function toggleCart() {
+      document.getElementById("cartPopup").classList.toggle("active");
+    }
+
+    function checkout() {
+      if (cart.length === 0) {
+        alert("Your cart is empty!");
+        return;
+      }
+      cart = [];
+      updateCart();
+      document.getElementById("thankYouMessage").style.display = "block";
+    }
+
+    document.getElementById("cartIcon").addEventListener("click", toggleCart);
+
+    displayProducts();
+    
+  </script>
+</body>
+</html>
